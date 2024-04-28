@@ -11,8 +11,6 @@ import torch.nn.functional as F
 import streamlit as st
 from torchvision.models import efficientnet_b3
 from torchvision.models import EfficientNet_B3_Weights
-from torchvision.models import efficientnet_b7
-from torchvision.models import EfficientNet_B7_Weights
 from torchvision.models import mobilenet_v3_small
 from torchvision.models import MobileNet_V3_Small_Weights
 import ssl
@@ -152,6 +150,13 @@ transform_vae = transforms.Compose([
 
 @st.cache_resource()
 def load_model():
+    # Model1
+    efficientnet = efficientnet_b3(weights=EfficientNet_B3_Weights.IMAGENET1K_V1)
+    efficientnet.classifier = torch.nn.Sequential(*list(efficientnet.classifier.children())[:-1])
+    state = torch.load("./ClassificationModels/MyEfficientnet_256_100_long_best_model.pt", map_location='cpu')
+    model1 = MyEfficientnetB3(efficientnet)
+    model1.load_state_dict(state['state_dict'])
+    model1.eval()
     # Model3
     mobilenet = mobilenet_v3_small(weights=MobileNet_V3_Small_Weights.IMAGENET1K_V1)
     mobilenet.classifier = torch.nn.Sequential(*list(mobilenet.classifier.children())[:-1])
@@ -169,7 +174,7 @@ def load_model():
     model4 = StudentModel(mobilenet)
     model4.load_state_dict(state['state_dict'])
 
-    return [model3, model4]
+    return [model1, model3, model4]
 
 
 with st.spinner('Models is being loaded..'):
